@@ -3,6 +3,7 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QHotkey>
+#include <cstddef>
 
 void setRegistered(std::map<std::string, QHotkey *> hotkeys, bool registered) {
     for (auto const &x : hotkeys) {
@@ -10,11 +11,22 @@ void setRegistered(std::map<std::string, QHotkey *> hotkeys, bool registered) {
     }
 }
 
+void removeWhitespaces(char *text)
+{
+    int amount = 0;
+    for (size_t i = 0; text[i]; i++)
+        if (text[i] != ' ') {
+            text[amount++] = text[i];
+        }
+    text[amount] = 0;
+}
+
 QHotkey *setupOCRHotkey(QString sequence, char *callback(ORIENTATION orn),
                         ORIENTATION orn) {
     QHotkey *hotkey = new QHotkey(QKeySequence(sequence), true, qApp);
     QObject::connect(hotkey, &QHotkey::activated, qApp, [=]() {
         char *text = callback(orn);
+        removeWhitespaces(text);
         qApp->clipboard()->setText(text);
     });
     return hotkey;
